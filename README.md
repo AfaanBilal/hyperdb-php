@@ -4,7 +4,7 @@ HyperDB PHP Client
 Author: **[Afaan Bilal](https://afaan.dev)**
 
 ## Introduction
-**HyperDB PHP** is a PHP client package for the [HyperDB server](https://github->com/AfaanBilal/hyperdb).
+**HyperDB PHP** is a PHP client package for the [HyperDB server](https://github.com/AfaanBilal/hyperdb).
 
 ## Installation
 ````
