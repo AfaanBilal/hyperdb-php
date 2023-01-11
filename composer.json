@@ -1,0 +1,19 @@
+{
+    "name": "afaanbilal/hyperdb-php",
+    "description": "HyperDB PHP Client",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "AfaanBilal\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Afaan Bilal"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.5"
+    }
+}
