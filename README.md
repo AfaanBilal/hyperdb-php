@@ -22,6 +22,10 @@ use AfaanBilal\HyperDB;
 // Setup with address (default: http://localhost:8765)
 $hyperdb = new HyperDB('http://localhost:8765');
 
+// OR
+// Setup with address and authentication
+$hyperdb = new HyperDB('http://localhost:8765', 'username', 'password');
+
 // Ping the server
 $r = $hyperdb->ping();
 var_dump($r); // bool(true)

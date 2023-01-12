@@ -22,26 +22,101 @@ class HyperDB
     private string $address;
 
     /**
+     * Username
+     *
+     * @var string
+     */
+    public string $username;
+
+    /**
+     * Password
+     *
+     * @var string
+     */
+    public string $password;
+
+    /**
+     * Authentication enabled?
+     *
+     * @var bool
+     */
+    private bool $authEnabled = false;
+
+    /**
+     * Authentication token (JWT).
+     *
+     * @var string
+     */
+    private string $token = "";
+
+    /**
      * Constructor
      *
      * @param  string $address HyperDB Server Address
+     * @param  string $username Username
+     * @param  string $password Password
      *
      * @return string
      */
-    public function __construct(string $address = 'http://localhost:8765')
+    public function __construct(string $address = 'http://localhost:8765', string $username = '', string $password = '')
     {
         $this->address = $address;
-    }
 
-    public function http(string $url = '', string $method = 'GET', string $body = ''): string
-    {
-        $client = new \GuzzleHttp\Client();
-        return (string) $client->request($method, $this->address . '/' . $url, $body === '' ? [] : ['body' => $body])->getBody();
+        $this->username = $username;
+        $this->password = $password;
+
+        if ($this->username !== '' && $this->password !== '') {
+            $this->authEnabled = true;
+        }
     }
 
     const Status_PONG = 'PONG';
     const Status_TRUE = 'YES';
     const Status_OK   = 'OK';
+    const Status_INVALID_CREDENTIALS = 'INVALID_CREDENTIALS';
+    const Status_AUTH_FAILED = 'AUTH_FAILED';
+
+    public function http(string $url = '', string $method = 'GET', string $body = ''): string
+    {
+        $client = new \GuzzleHttp\Client();
+        return (string) $client->request($method, $this->address . '/' . $url, $body === '' ? [] : ['body' => $body])->getBody();
+
+        $options = [];
+
+        if ($body !== "") {
+            $options['body'] = $body;
+        }
+
+        if ($this->authEnabled) {
+            if ($this->token === "") {
+                $this->auth();
+            }
+
+            $options['headers'] = ['Auth' => $this->token];
+        }
+
+        $response = (string) $client->request($method, $this->address . '/' . $url, $options)->getBody();
+
+        if ($response === self::Status_AUTH_FAILED) {
+            $this->auth();
+            $options['headers']['Auth'] = $this->token;
+            $response = (string) $client->request($method, $this->address . '/' . $url, $options)->getBody();
+        }
+
+        return $response;
+    }
+
+    private function auth(): void
+    {
+        $client = new \GuzzleHttp\Client();
+        $authResponse = (string) $client->request('POST', $this->address . '/auth', ['headers' => ['username' => $this->username, 'password' => $this->password]])->getBody();
+
+        if ($authResponse === self::Status_INVALID_CREDENTIALS) {
+            throw new \Exception("Invalid credentials.");
+        }
+
+        $this->token = $authResponse;
+    }
 
     public function ping(): bool
     {
